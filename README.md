@@ -1,2 +1,3 @@
-# weby-pilot
-Automation for randomly selected websites
+# Weby Pilot
+
+Automation for randomly selected websites 🤖.
