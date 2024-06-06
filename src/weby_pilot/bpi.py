@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from os import environ
-from typing import Literal
+from typing import Literal, Sequence
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
@@ -31,7 +31,7 @@ BpiSideSections = Literal[
 
 class BpiAPI(WebyAPI):
     @classmethod
-    def download_report(cls):
+    def download_report(cls, report_indexes: Sequence[int] = (0,)):
         username = environ.get("BPI_USERNAME", None)
         password = environ.get("BPI_PASSWORD", None)
         if username is None:
@@ -40,11 +40,12 @@ class BpiAPI(WebyAPI):
             raise Exception("BPI_PASSWORD must be set")
 
         instance = cls()
-        with instance.driver_ctx():
+        with instance.driver_ctx(options=cls.build_options()):
             instance.login(username, password)
             instance.select_section("Consultas")
             instance.select_side_menu("Extrato Conta")
-            instance.click_extract()
+            for report_index in report_indexes:
+                instance.click_extract(row_index=report_index)
 
     def login(self, username: str, password: str):
         self.driver.get("https://bpinetempresas.bancobpi.pt/SIGNON/signon.asp")
@@ -68,8 +69,10 @@ class BpiAPI(WebyAPI):
         )
         side_section_e.click()
 
-    def click_extract(self, wait_download: bool = True):
-        open_extract = self.get_element(By.XPATH, '//a[contains(text(), "Abrir")]')
-        open_extract.click()
-        if wait_download:
-            self.wait_download()
+    def click_extract(self, row_index=0, wait_download: bool = True):
+        open_extract = self.get_element(
+            By.XPATH,
+            f'//table[contains(@class, "TableRecords")]//tr[{row_index + 1}]//a[contains(text(), "Abrir")]',
+        )
+        with self.download_ctx(wait_download=wait_download):
+            open_extract.click()

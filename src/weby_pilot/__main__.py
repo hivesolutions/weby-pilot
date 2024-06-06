@@ -3,4 +3,4 @@
 
 from .bpi import BpiAPI
 
-BpiAPI.download_report()
+BpiAPI.download_report(report_indexes=range(0, 8))

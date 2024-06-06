@@ -4,9 +4,9 @@
 from typing import Any, Generator, Literal, Tuple
 from uuid import uuid4
 from time import sleep
-from os import makedirs, listdir, rename
 from contextlib import contextmanager
-from os.path import exists, abspath
+from os import makedirs, listdir, rename, remove, environ
+from os.path import exists, abspath, isabs
 from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions
@@ -17,13 +17,26 @@ MAX_WAIT_TIME = 30.0
 ImageFormat = Literal["png", "jpeg", "gif", "bmp", "tiff", "svg"]
 
 
+class WebyOptions:
+    headless: bool = False
+
+    def __init__(self, headless: bool = False):
+        self.headless = headless
+
+
 class WebyAPI:
     _driver: Chrome | None = None
     _wait: WebDriverWait[Chrome] | None = None
     _downloads_dir: str = abspath("downloads")
     _temp_dir: str = abspath("temp")
 
-    def start(self):
+    @classmethod
+    def build_options(cls):
+        return WebyOptions(headless=bool(environ.get("HEADLESS", False)))
+
+    def start(self, options: WebyOptions = WebyOptions()):
+
+        print(options.headless)
 
         if not exists(self._downloads_dir):
             makedirs(self._downloads_dir)
@@ -32,6 +45,8 @@ class WebyAPI:
             makedirs(self._temp_dir)
 
         chrome_options = ChromeOptions()
+        if options.headless:
+            chrome_options.arguments.append("--headless=new")
         chrome_options.add_experimental_option(
             "prefs",
             {
@@ -57,12 +72,15 @@ class WebyAPI:
 
     def wait_download(
         self,
+        file_path: str | None = None,
         suffix: str = ".crdownload",
         timeout: float = MAX_WAIT_TIME,
         step_time: float = 1.0,
         move_file: bool = True,
-    ):
+        overwrite: bool = True,
+    ) -> str | None:
         seconds = 0.0
+        dst: str | None = None
 
         while seconds < timeout:
             sleep(step_time)
@@ -81,13 +99,33 @@ class WebyAPI:
             # if the file should be moved, then move it from
             # the temp download folder to the downloads folder
             if move_file:
-                for filename in listdir(self._temp_dir):
-                    src = f"{self._temp_dir}/{filename}"
-                    dst = f"{self._downloads_dir}/{filename}"
-                    rename(src, dst)
+                filename = listdir(self._temp_dir)[0]
+
+                if filename in listdir(self._downloads_dir):
+                    if overwrite:
+                        remove(f"{self._downloads_dir}/{filename}")
+                    else:
+                        raise Exception(
+                            f"File {filename} already exists in downloads folder"
+                        )
+
+                src = f"{self._temp_dir}/{filename}"
+                dst = f"{self._downloads_dir}/{filename}"
+
+                if file_path is not None:
+                    dst = (
+                        file_path
+                        if isabs(file_path)
+                        else f"{self._downloads_dir}/{file_path}"
+                    )
+
+                src = abspath(src)
+                dst = abspath(dst)
+
+                rename(src, dst)
 
             # if we reach this point, then the download is completed
-            return
+            return dst
 
         raise Exception(f"Download not completed after {timeout} seconds")
 
@@ -108,13 +146,26 @@ class WebyAPI:
         return filename
 
     @contextmanager
-    def driver_ctx(self, stop=True) -> Generator[Chrome, Any, Any]:
-        self.start()
+    def driver_ctx(
+        self, options: WebyOptions = WebyOptions(), stop=True
+    ) -> Generator[Chrome, Any, Any]:
+        self.start(options=options)
         try:
             yield self.driver
         finally:
             if stop:
                 self.stop()
+
+    @contextmanager
+    def download_ctx(
+        self, wait_download=True, file_path: str | None = None
+    ) -> Generator[str, Any, Any]:
+        self._cleanup_temp()
+        try:
+            yield self._downloads_dir
+        finally:
+            if wait_download:
+                self.wait_download(file_path=file_path)
 
     @property
     def driver(self) -> Chrome:
@@ -127,3 +178,7 @@ class WebyAPI:
         if self._wait is None:
             raise Exception("Wait is not started")
         return self._wait
+
+    def _cleanup_temp(self):
+        for filename in listdir(self._temp_dir):
+            remove(f"{self._temp_dir}/{filename}")
