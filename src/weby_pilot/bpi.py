@@ -24,11 +24,22 @@ BpiSections = Literal[
 BpiSideSections = Literal[
     "Posição Integrada",
     "Posição Integrada Global",
+    "Avisos/Faturas/Notas Crédito e Débito",
+    "Avaliação da Adequação de Prod. Investimento",
     "Extrato Conta",
     "Extrato Cartões",
 ]
 
 ReportSections = Literal["Extrato Conta", "Extrato Investimento"]
+
+SelectDateRange = Literal[
+    "Últimos 3 dias",
+    "Última Semana",
+    "Último Mês",
+    "Últimos 3 Meses",
+    "Último Ano",
+    "Intervalo de Datas",
+]
 
 
 class BpiAPI(WebyAPI):
@@ -42,6 +53,15 @@ class BpiAPI(WebyAPI):
             raise Exception("BPI_PASSWORD must be set")
 
         return username, password
+
+    @classmethod
+    def download_invoice(cls, range: SelectDateRange = "Último Ano"):
+        instance = cls()
+        with instance.driver_ctx(options=cls.build_options()):
+            instance.login(*cls.build_login())
+            instance.select_section("Consultas")
+            instance.select_side_menu("Avisos/Faturas/Notas Crédito e Débito")
+            instance.select_item(instance.get_elements(By.XPATH, "//select")[2], range)
 
     @classmethod
     def download_report(
@@ -80,8 +100,8 @@ class BpiAPI(WebyAPI):
         close = self.driver.find_element(By.ID, "fechar")
         close.click()
 
-        username_e = self.get_element(By.CSS_SELECTOR, '[label="Nome Acesso"]')
-        password_e = self.get_element(By.CSS_SELECTOR, '[label="Código Secreto"]')
+        username_e = self.get_element(By.XPATH, '//*[@label="Nome Acesso"]')
+        password_e = self.get_element(By.XPATH, '//*[@label="Código Secreto"]')
         username_e.send_keys(username)
         password_e.send_keys(password)
         password_e.send_keys(Keys.RETURN)

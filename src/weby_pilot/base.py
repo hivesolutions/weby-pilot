@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from typing import Any, Generator, Literal, Tuple
+from typing import Any, Generator, List, Literal
 from uuid import uuid4
 from time import sleep
 from contextlib import contextmanager
@@ -10,7 +10,7 @@ from os.path import exists, abspath, isabs
 from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import WebDriverWait, Select
 
 MAX_WAIT_TIME = 30.0
 
@@ -35,9 +35,6 @@ class WebyAPI:
         return WebyOptions(headless=bool(environ.get("HEADLESS", False)))
 
     def start(self, options: WebyOptions = WebyOptions()):
-
-        print(options.headless)
-
         if not exists(self._downloads_dir):
             makedirs(self._downloads_dir)
 
@@ -69,6 +66,16 @@ class WebyAPI:
         return self.wait.until(
             expected_conditions.presence_of_element_located((by, value))
         )
+
+    def get_elements(self, by: str, value: str) -> List[WebElement]:
+        return self.wait.until(
+            expected_conditions.presence_of_all_elements_located((by, value))
+        )
+
+    def select_item(self, element: WebElement, text: str) -> Select:
+        select = Select(element)
+        select.select_by_visible_text(text)
+        return select
 
     def wait_download(
         self,
