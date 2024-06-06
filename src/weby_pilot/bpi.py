@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from os import environ
-from typing import Literal, Sequence
+from typing import Literal, Sequence, Tuple
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
@@ -31,7 +31,7 @@ BpiSideSections = Literal[
 
 class BpiAPI(WebyAPI):
     @classmethod
-    def download_report(cls, report_indexes: Sequence[int] = (0,)):
+    def build_login(cls) -> Tuple[str, str]:
         username = environ.get("BPI_USERNAME", None)
         password = environ.get("BPI_PASSWORD", None)
         if username is None:
@@ -39,12 +39,27 @@ class BpiAPI(WebyAPI):
         if password is None:
             raise Exception("BPI_PASSWORD must be set")
 
+        return username, password
+
+    @classmethod
+    def download_report(cls, report_indexes: Sequence[int] = (0,)):
         instance = cls()
         with instance.driver_ctx(options=cls.build_options()):
-            instance.login(username, password)
+            instance.login(*cls.build_login())
             instance.select_section("Consultas")
             instance.select_side_menu("Extrato Conta")
             for report_index in report_indexes:
+                instance.click_extract(row_index=report_index)
+
+    @classmethod
+    def download_card_report(cls, card_index=0, report_indexes: Sequence[int] = (0,)):
+        instance = cls()
+        with instance.driver_ctx(options=cls.build_options()):
+            instance.login(*cls.build_login())
+            instance.select_section("Consultas")
+            instance.select_side_menu("Extrato Cartões")
+            for report_index in report_indexes:
+                instance.click_card_account(row_index=card_index)
                 instance.click_extract(row_index=report_index)
 
     def login(self, username: str, password: str):
@@ -76,3 +91,9 @@ class BpiAPI(WebyAPI):
         )
         with self.download_ctx(wait_download=wait_download):
             open_extract.click()
+
+    def click_card_account(self, row_index=0, wait_download: bool = True):
+        card_account = self.get_element(
+            By.XPATH, f'//a[contains(@class, "Text_NoWrap")][{row_index + 1}]'
+        )
+        card_account.click()
