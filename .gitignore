@@ -8,4 +8,5 @@
 /.env
 /.venv
 
+/temp
 /downloads

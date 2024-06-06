@@ -2,11 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from os import environ
-from time import sleep
 from typing import Literal
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support import expected_conditions
 
 from .base import WebyAPI
 
@@ -53,36 +51,25 @@ class BpiAPI(WebyAPI):
 
         close = self.driver.find_element(By.ID, "fechar")
         close.click()
-        sleep(1)
 
-        username_e = self.driver.find_element(By.CSS_SELECTOR, '[label="Nome Acesso"]')
-        password_e = self.driver.find_element(
-            By.CSS_SELECTOR, '[label="Código Secreto"]'
-        )
+        username_e = self.get_element(By.CSS_SELECTOR, '[label="Nome Acesso"]')
+        password_e = self.get_element(By.CSS_SELECTOR, '[label="Código Secreto"]')
         username_e.send_keys(username)
         password_e.send_keys(password)
         password_e.send_keys(Keys.RETURN)
 
     def select_section(self, section: BpiSections):
-        section_e = self.wait.until(
-            expected_conditions.presence_of_element_located(
-                (By.XPATH, f'//a[contains(text(), "{section}")]')
-            )
-        )
+        section_e = self.get_element(By.XPATH, f'//a[contains(text(), "{section}")]')
         section_e.click()
 
     def select_side_menu(self, side_section: BpiSideSections):
-        side_section_e = self.wait.until(
-            expected_conditions.presence_of_element_located(
-                (By.XPATH, f'//div[contains(text(), "{side_section}")]')
-            )
+        side_section_e = self.get_element(
+            By.XPATH, f'//div[contains(text(), "{side_section}")]'
         )
         side_section_e.click()
 
-    def click_extract(self):
-        open_extract = self.wait.until(
-            expected_conditions.presence_of_element_located(
-                (By.XPATH, '//a[contains(text(), "Abrir")]')
-            )
-        )
+    def click_extract(self, wait_download: bool = True):
+        open_extract = self.get_element(By.XPATH, '//a[contains(text(), "Abrir")]')
         open_extract.click()
+        if wait_download:
+            self.wait_download()
