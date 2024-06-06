@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from os import environ
-from typing import Literal, Sequence, Tuple
+from typing import Literal, Sequence, Tuple, cast
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
@@ -28,6 +28,8 @@ BpiSideSections = Literal[
     "Extrato Cartões",
 ]
 
+ReportSections = Literal["Extrato Conta", "Extrato Investimento"]
+
 
 class BpiAPI(WebyAPI):
     @classmethod
@@ -42,14 +44,24 @@ class BpiAPI(WebyAPI):
         return username, password
 
     @classmethod
-    def download_report(cls, report_indexes: Sequence[int] = (0,)):
+    def download_report(
+        cls,
+        section: ReportSections = "Extrato Conta",
+        report_indexes: Sequence[int] = (0,),
+    ):
         instance = cls()
         with instance.driver_ctx(options=cls.build_options()):
             instance.login(*cls.build_login())
             instance.select_section("Consultas")
-            instance.select_side_menu("Extrato Conta")
+            instance.select_side_menu(cast(BpiSideSections, section))
             for report_index in report_indexes:
                 instance.click_extract(row_index=report_index)
+
+    @classmethod
+    def download_investing_report(cls, report_indexes: Sequence[int] = (0,)):
+        return cls.download_report(
+            section="Extrato Investimento", report_indexes=report_indexes
+        )
 
     @classmethod
     def download_card_report(cls, card_index=0, report_indexes: Sequence[int] = (0,)):
