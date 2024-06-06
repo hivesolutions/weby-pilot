@@ -24,6 +24,9 @@ BpiSections = Literal[
 BpiSideSections = Literal[
     "Posição Integrada",
     "Posição Integrada Global",
+    "Saldos",
+    "Lista Saldos",
+    "Movimentos",
     "Avisos/Faturas/Notas Crédito e Débito",
     "Avaliação da Adequação de Prod. Investimento",
     "Extrato Conta",
@@ -62,6 +65,15 @@ class BpiAPI(WebyAPI):
             raise Exception("BPI_PASSWORD must be set")
 
         return username, password
+
+    @classmethod
+    def get_balance(cls) -> str:
+        instance = cls()
+        with instance.driver_ctx(options=cls.build_options()):
+            instance.login(*cls.build_login())
+            instance.select_section("Consultas")
+            instance.select_side_menu("Movimentos")
+            return instance.text_balance()
 
     @classmethod
     def download_invoice(
@@ -121,6 +133,12 @@ class BpiAPI(WebyAPI):
         username_e.send_keys(username)
         password_e.send_keys(password)
         password_e.send_keys(Keys.RETURN)
+
+    def text_balance(self) -> str:
+        balance = self.get_element(
+            By.XPATH, "//div[text()='Saldo Disponível:']/following-sibling::div/span"
+        )
+        return balance.text
 
     def select_section(self, section: BpiSections):
         section_e = self.get_element(By.XPATH, f"//a[contains(text(), '{section}')]")
