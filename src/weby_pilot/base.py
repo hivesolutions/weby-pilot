@@ -7,6 +7,7 @@ from os import makedirs
 from contextlib import contextmanager
 from os.path import exists, abspath
 from selenium.webdriver import Chrome, ChromeOptions
+from selenium.webdriver.support.ui import WebDriverWait
 
 ImageFormat = Literal["png", "jpeg", "gif", "bmp", "tiff", "svg"]
 
@@ -32,6 +33,8 @@ class WebyAPI:
             },
         )
         self._driver = Chrome(options=chrome_options)
+
+        self._wait = WebDriverWait(self._driver, 10)
 
     def stop(self):
         if self.driver is not None:
@@ -67,3 +70,9 @@ class WebyAPI:
         if self._driver is None:
             raise Exception("Driver is not started")
         return self._driver
+
+    @property
+    def wait(self) -> WebDriverWait[Chrome]:
+        if self._wait is None:
+            raise Exception("Wait is not started")
+        return self._wait
