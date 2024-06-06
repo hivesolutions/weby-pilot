@@ -10,10 +10,6 @@ import time
 BPI_USERNAME = os.environ.get("BPI_USERNAME")
 BPI_PASSWORD = os.environ.get("BPI_PASSWORD")
 
-download_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "downloads")
-
-if not os.path.exists(download_dir):
-    os.makedirs(download_dir)
 
 chrome_options = webdriver.ChromeOptions()
 prefs = {
