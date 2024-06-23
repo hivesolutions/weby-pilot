@@ -2,6 +2,11 @@
 
 Automation for randomly selected websites 🤖.
 
+## Supported Websites
+
+* [BPI](https://www.bancobpi.pt/)
+* [BIG](https://big.pt/)
+
 ## License
 
 Weby Pilot is currently licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/).
