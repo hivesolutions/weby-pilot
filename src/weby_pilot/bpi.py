@@ -1,8 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from enum import Enum
 from os import environ
-from typing import Literal, Sequence, Tuple, cast
+from datetime import datetime
+from typing import IO, Literal, Sequence, Tuple, cast
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
@@ -81,7 +83,6 @@ class BpiAPI(WebyAPI):
         return username, password
 
     def get_balance(self) -> str:
-        cls = self.__class__
         with self.driver_ctx():
             self.login()
             self.select_section("Consultas")
@@ -93,28 +94,61 @@ class BpiAPI(WebyAPI):
         date_range: SelectDateRange = "Último Ano",
         document_type: DocumentType = "Facturas",
         invoice_indexes: Sequence[int] = (0,),
-    ):
+    ) -> Sequence["BpiDocument"]:
+        docs: list[BpiDocument] = []
         with self.driver_ctx():
-            self.login(*cls.build_login())
+            self.login()
             self.select_section("Consultas")
             self.select_side_menu("Avisos/Faturas/Notas Crédito e Débito")
             self.select_filters(date_range=date_range, document_type=document_type)
             for invoice_index in invoice_indexes:
                 self.click_extract(row_index=invoice_index)
+                docs.append(
+                    BpiDocument(
+                        BpiDocumentType.from_section(document_type),
+                        self._last_download_path,
+                        self._last_download_buffer(),
+                        date=datetime.strptime(
+                            self._last_download_path[-14:-4], "%Y-%m-%d"
+                        ),
+                    )
+                )
+        return docs
 
     def download_report(
         self,
         section: ReportSections = "Extrato Conta",
         report_indexes: Sequence[int] = (0,),
-    ):
+    ) -> Sequence["BpiDocument"]:
+        docs: list[BpiDocument] = []
         with self.driver_ctx():
             self.login()
             self.select_section("Consultas")
             self.select_side_menu(cast(BpiSideSections, section))
             for report_index in report_indexes:
                 self.click_extract(row_index=report_index)
+                docs.append(
+                    BpiDocument(
+                        BpiDocumentType.from_section(section),
+                        self._last_download_path,
+                        self._last_download_buffer(),
+                        date=datetime.strptime(
+                            self._last_download_path[-14:-4], "%Y-%m-%d"
+                        ),
+                    )
+                )
+        return docs
 
-    def download_investing_report(self, report_indexes: Sequence[int] = (0,)):
+    def download_account_report(
+        self, report_indexes: Sequence[int] = (0,)
+    ) -> Sequence["BpiDocument"]:
+        return self.download_report(
+            section="Extrato Conta", report_indexes=report_indexes
+        )
+
+    def download_investing_report(
+        self, report_indexes: Sequence[int] = (0,)
+    ) -> Sequence["BpiDocument"]:
         return self.download_report(
             section="Extrato Investimento", report_indexes=report_indexes
         )
@@ -176,3 +210,47 @@ class BpiAPI(WebyAPI):
             By.XPATH, f"//a[contains(@class, 'Text_NoWrap')][{row_index + 1}]"
         )
         card_account.click()
+
+
+class BpiDocumentType(Enum):
+    ACCOUNT_EXTRACT = 1
+    CARD_EXTRACT = 2
+    INVESTMENT_EXTRACT = 3
+    INVOICE = 4
+    UNKNOWN = 100
+
+    @classmethod
+    def from_section(cls, section: str) -> "BpiDocumentType":
+        if section == "Extrato Conta":
+            return BpiDocumentType.ACCOUNT_EXTRACT
+        if section == "Extrato Cartões":
+            return BpiDocumentType.CARD_EXTRACT
+        if section == "Extrato Investimento":
+            return BpiDocumentType.INVESTMENT_EXTRACT
+        if section == "Avisos/Faturas/Notas Crédito e Débito":
+            return BpiDocumentType.INVOICE
+        if section == "Faturas":
+            return BpiDocumentType.INVOICE
+        return BpiDocumentType.UNKNOWN
+
+    def __repr__(self):
+        return self.name.lower().replace("_", " ").title()
+
+
+class BpiDocument:
+
+    type: BpiDocumentType
+    name: str
+    buffer: IO
+    date: datetime | None
+
+    def __init__(
+        self, type: BpiDocumentType, name: str, buffer: IO, date: datetime | None = None
+    ):
+        self.type = type
+        self.name = name
+        self.buffer = buffer
+        self.date = date
+
+    def __repr__(self):
+        return f"BpiDocument(type={self.type}, name={self.name}, date={self.date})"

@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from typing import Any, Generator, List, Literal
+from io import BytesIO
+from typing import IO, Any, Generator, List, Literal
 from uuid import uuid4
 from time import sleep
 from contextlib import contextmanager
@@ -29,6 +30,7 @@ class WebyAPI:
     _wait: WebDriverWait[Chrome] | None = None
     _downloads_dir: str = abspath("downloads")
     _temp_dir: str = abspath("temp")
+    _last_path: str | None = None
 
     @classmethod
     def build_options(cls):
@@ -131,7 +133,10 @@ class WebyAPI:
 
                 rename(src, dst)
 
+            self._last_path = dst
+
             # if we reach this point, then the download is completed
+            # we can return the destination file path
             return dst
 
         raise Exception(f"Download not completed after {timeout} seconds")
@@ -191,3 +196,25 @@ class WebyAPI:
     def _cleanup_temp(self):
         for filename in listdir(self._temp_dir):
             remove(f"{self._temp_dir}/{filename}")
+
+    def _last_download(self) -> IO:
+        return open(self._last_download_path, "rb")
+
+    def _last_download_buffer(self) -> IO:
+        file = self._last_download()
+        try:
+            content = file.read()
+        finally:
+            file.close()
+        buffer = BytesIO(content)
+        buffer.write(content)
+        buffer.seek(0)
+        return buffer
+
+    @property
+    def _last_download_path(self) -> str:
+        if self._last_path is None:
+            raise Exception("No file downloaded")
+        if not exists(self._last_path):
+            raise Exception(f"File {self._last_download} does not exist")
+        return self._last_path
