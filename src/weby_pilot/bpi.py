@@ -55,6 +55,20 @@ DocumentType = Literal[
 
 
 class BpiAPI(WebyAPI):
+
+    username: str | None = None
+
+    password: str | None = None
+
+    def __init__(self, username: str | None = None, password: str | None = None):
+        super().__init__()
+
+        cls = self.__class__
+
+        _username, _password = cls.build_login()
+        self.username = username or _username
+        self.password = password or _password
+
     @classmethod
     def build_login(cls) -> Tuple[str, str]:
         username = environ.get("BPI_USERNAME", None)
@@ -66,63 +80,55 @@ class BpiAPI(WebyAPI):
 
         return username, password
 
-    @classmethod
-    def get_balance(cls) -> str:
-        instance = cls()
-        with instance.driver_ctx(options=cls.build_options()):
-            instance.login(*cls.build_login())
-            instance.select_section("Consultas")
-            instance.select_side_menu("Movimentos")
-            return instance.text_balance()
+    def get_balance(self) -> str:
+        cls = self.__class__
+        with self.driver_ctx():
+            self.login()
+            self.select_section("Consultas")
+            self.select_side_menu("Movimentos")
+            return self.text_balance()
 
-    @classmethod
     def download_invoice(
-        cls,
+        self,
         date_range: SelectDateRange = "Último Ano",
         document_type: DocumentType = "Facturas",
         invoice_indexes: Sequence[int] = (0,),
     ):
-        instance = cls()
-        with instance.driver_ctx(options=cls.build_options()):
-            instance.login(*cls.build_login())
-            instance.select_section("Consultas")
-            instance.select_side_menu("Avisos/Faturas/Notas Crédito e Débito")
-            instance.select_filters(date_range=date_range, document_type=document_type)
+        with self.driver_ctx():
+            self.login(*cls.build_login())
+            self.select_section("Consultas")
+            self.select_side_menu("Avisos/Faturas/Notas Crédito e Débito")
+            self.select_filters(date_range=date_range, document_type=document_type)
             for invoice_index in invoice_indexes:
-                instance.click_extract(row_index=invoice_index)
+                self.click_extract(row_index=invoice_index)
 
-    @classmethod
     def download_report(
-        cls,
+        self,
         section: ReportSections = "Extrato Conta",
         report_indexes: Sequence[int] = (0,),
     ):
-        instance = cls()
-        with instance.driver_ctx(options=cls.build_options()):
-            instance.login(*cls.build_login())
-            instance.select_section("Consultas")
-            instance.select_side_menu(cast(BpiSideSections, section))
+        with self.driver_ctx():
+            self.login()
+            self.select_section("Consultas")
+            self.select_side_menu(cast(BpiSideSections, section))
             for report_index in report_indexes:
-                instance.click_extract(row_index=report_index)
+                self.click_extract(row_index=report_index)
 
-    @classmethod
-    def download_investing_report(cls, report_indexes: Sequence[int] = (0,)):
-        return cls.download_report(
+    def download_investing_report(self, report_indexes: Sequence[int] = (0,)):
+        return self.download_report(
             section="Extrato Investimento", report_indexes=report_indexes
         )
 
-    @classmethod
-    def download_card_report(cls, card_index=0, report_indexes: Sequence[int] = (0,)):
-        instance = cls()
-        with instance.driver_ctx(options=cls.build_options()):
-            instance.login(*cls.build_login())
-            instance.select_section("Consultas")
-            instance.select_side_menu("Extrato Cartões")
+    def download_card_report(self, card_index=0, report_indexes: Sequence[int] = (0,)):
+        with self.driver_ctx():
+            self.login()
+            self.select_section("Consultas")
+            self.select_side_menu("Extrato Cartões")
             for report_index in report_indexes:
-                instance.click_card_account(row_index=card_index)
-                instance.click_extract(row_index=report_index)
+                self.click_card_account(row_index=card_index)
+                self.click_extract(row_index=report_index)
 
-    def login(self, username: str, password: str):
+    def login(self, username: str | None = None, password: str | None = None):
         self.driver.get("https://bpinetempresas.bancobpi.pt/SIGNON/signon.asp")
 
         close = self.driver.find_element(By.ID, "fechar")
@@ -130,8 +136,8 @@ class BpiAPI(WebyAPI):
 
         username_e = self.get_element(By.XPATH, "//*[@label='Nome Acesso']")
         password_e = self.get_element(By.XPATH, "//*[@label='Código Secreto']")
-        username_e.send_keys(username)
-        password_e.send_keys(password)
+        username_e.send_keys(username or self.username or "")
+        password_e.send_keys(password or self.password or "")
         password_e.send_keys(Keys.RETURN)
 
     def text_balance(self) -> str:

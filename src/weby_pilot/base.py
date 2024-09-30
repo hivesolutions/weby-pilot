@@ -154,8 +154,10 @@ class WebyAPI:
 
     @contextmanager
     def driver_ctx(
-        self, options: WebyOptions = WebyOptions(), stop=True
+        self, options: WebyOptions | None = None, stop=True
     ) -> Generator[Chrome, Any, Any]:
+        if options is None:
+            options = self.build_options()
         self.start(options=options)
         try:
             yield self.driver

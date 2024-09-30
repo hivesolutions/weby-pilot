@@ -9,6 +9,6 @@ from .bpi import BpiAPI
 
 # BpiAPI.download_invoice()
 
-print(BpiAPI.get_balance())
+print(BpiAPI().get_balance())
 
 # BpiAPI.download_card_report(report_indexes=range(0, 8))
