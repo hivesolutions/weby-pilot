@@ -6,6 +6,7 @@ from typing import Tuple
 
 from .base import WebyAPI
 
+
 class BpiAPI(WebyAPI):
     @classmethod
     def build_login(cls) -> Tuple[str, str, str]:
