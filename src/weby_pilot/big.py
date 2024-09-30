@@ -11,7 +11,7 @@ class BpiAPI(WebyAPI):
     def build_login(cls) -> Tuple[str, str, str]:
         username = environ.get("BIG_USERNAME", None)
         password = environ.get("BIG_PASSWORD", None)
-        nif = environ.get("BIG_NIf", None)
+        nif = environ.get("BIG_NIF", None)
         if username is None:
             raise Exception("BIG_USERNAME must be set")
         if password is None:
