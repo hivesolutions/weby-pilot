@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from os.path import environ
+from os import environ
 from typing import Tuple
 
 from .base import WebyAPI
 
 
-class BpiAPI(WebyAPI):
+class BigAPI(WebyAPI):
     @classmethod
     def build_login(cls) -> Tuple[str, str, str]:
         username = environ.get("BIG_USERNAME", None)
