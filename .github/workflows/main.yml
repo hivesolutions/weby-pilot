@@ -6,9 +6,6 @@ jobs:
     strategy:
       matrix:
         python-version: [
-          2.7,
-          3.5,
-          3.6,
           3.7,
           3.8,
           3.9,
@@ -37,7 +34,7 @@ jobs:
     name: Build PyPy
     strategy:
       matrix:
-        python-version: [2.7, 3.6, 3.9, "3.10"]
+        python-version: [3.9, "3.10"]
     runs-on: ubuntu-latest
     container: pypy:${{ matrix.python-version }}
     steps:
