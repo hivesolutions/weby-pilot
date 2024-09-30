@@ -3,6 +3,7 @@
 
 from enum import Enum
 from os import environ
+from os.path import basename
 from datetime import datetime
 from typing import IO, Literal, Sequence, Tuple, cast
 from selenium.webdriver.common.by import By
@@ -106,8 +107,9 @@ class BpiAPI(WebyAPI):
                 docs.append(
                     BpiDocument(
                         BpiDocumentType.from_section(document_type),
-                        self._last_download_path,
+                        basename(self._last_download_path),
                         self._last_download_buffer(),
+                        account=self.username,
                         date=datetime.strptime(
                             self._last_download_path[-14:-4], "%Y-%m-%d"
                         ),
@@ -130,8 +132,9 @@ class BpiAPI(WebyAPI):
                 docs.append(
                     BpiDocument(
                         BpiDocumentType.from_section(section),
-                        self._last_download_path,
+                        basename(self._last_download_path),
                         self._last_download_buffer(),
+                        account=self.username,
                         date=datetime.strptime(
                             self._last_download_path[-14:-4], "%Y-%m-%d"
                         ),
@@ -242,15 +245,22 @@ class BpiDocument:
     type: BpiDocumentType
     name: str
     buffer: IO
+    account: str | None
     date: datetime | None
 
     def __init__(
-        self, type: BpiDocumentType, name: str, buffer: IO, date: datetime | None = None
+        self,
+        type: BpiDocumentType,
+        name: str,
+        buffer: IO,
+        account: str | None = None,
+        date: datetime | None = None,
     ):
         self.type = type
         self.name = name
         self.buffer = buffer
+        self.account = account
         self.date = date
 
     def __repr__(self):
-        return f"BpiDocument(type={self.type}, name={self.name}, date={self.date})"
+        return f"BpiDocument(type={self.type}, name={self.name}, account={self.account} date={self.date})"
