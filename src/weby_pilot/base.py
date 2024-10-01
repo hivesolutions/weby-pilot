@@ -187,12 +187,12 @@ class WebyAPI:
         return self.driver.get_screenshot_as_png()
 
     def screenshot_file(
-        self, name: str | None = None, format: ImageFormat = "png"
+        self, name: str | None = None, image_format: ImageFormat = "png"
     ) -> str:
         if name is None:
             name = f"{uuid4()}"
 
-        filename = f"{name}.{format}"
+        filename = f"{name}.{image_format}"
 
         if not self.driver.get_screenshot_as_file(filename):
             raise Exception(f"Failed to save screenshot to {filename}")
