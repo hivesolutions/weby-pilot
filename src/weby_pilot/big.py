@@ -8,11 +8,8 @@ from .base import WebyAPI
 
 
 class BigAPI(WebyAPI):
-
     username: str | None = None
-
     password: str | None = None
-
     nif: str | None = None
 
     def build_login(self):

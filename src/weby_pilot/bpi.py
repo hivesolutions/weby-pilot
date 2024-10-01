@@ -59,9 +59,7 @@ DocumentType = Literal[
 
 
 class BpiAPI(WebyAPI):
-
     username: str | None = None
-
     password: str | None = None
 
     def __init__(self, username: str | None = None, password: str | None = None):
@@ -242,7 +240,6 @@ class BpiDocumentType(Enum):
 
 
 class BpiDocument:
-
     type: BpiDocumentType
     name: str
     buffer: IO[bytes]
