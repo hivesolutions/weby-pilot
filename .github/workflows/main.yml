@@ -27,7 +27,7 @@ jobs:
           cd src
           PYTHONPATH=. pylint --rcfile ../.pylintrc *
           cd ..
-        if: matrix.python-version == 'python:3.12'
+        if: matrix.python-version == '3.12'
       - run: |
           pip install mypy
           mypy src --ignore-missing-imports --disable-error-code no-redef
@@ -56,7 +56,7 @@ jobs:
           cd src
           PYTHONPATH=. pylint --rcfile ../.pylintrc *
           cd ..
-        if: matrix.python-version == 'python:3.12'
+        if: matrix.python-version == '3.12'
       - run: |
           pip install mypy
           mypy src --ignore-missing-imports --disable-error-code no-redef
