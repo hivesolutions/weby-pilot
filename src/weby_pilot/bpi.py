@@ -105,13 +105,13 @@ class BpiAPI(WebyAPI):
                 self.click_extract(row_index=invoice_index)
                 docs.append(
                     BpiDocument(
-                        BpiDocumentType.from_section(document_type),
+                        BpiDocumentType.INVOICE,
                         basename(self._last_download_path),
                         self._last_download_buffer(),
                         file_type=FileType.PDF,
                         account=self.username,
                         date=datetime.strptime(
-                            self._last_download_path[-14:-4], "%Y-%m-%d"
+                            basename(self._last_download_path)[:10], "%Y-%m-%d"
                         ),
                     )
                 )
@@ -140,7 +140,7 @@ class BpiAPI(WebyAPI):
                         file_type=FileType.PDF,
                         account=self.username,
                         date=datetime.strptime(
-                            self._last_download_path[-14:-4], "%Y-%m-%d"
+                            basename(self._last_download_path)[-14:-4], "%Y-%m-%d"
                         ),
                     )
                 )
@@ -181,7 +181,7 @@ class BpiAPI(WebyAPI):
                         file_type=FileType.PDF,
                         account=self.username,
                         date=datetime.strptime(
-                            self._last_download_path[-14:-4], "%Y-%m-%d"
+                            basename(self._last_download_path)[-14:-4], "%Y-%m-%d"
                         ),
                     )
                 )
@@ -226,13 +226,7 @@ class BpiAPI(WebyAPI):
         account_element = self.get_element(
             By.XPATH, "//div[text()='Conta']/following-sibling::div/*/select"
         )
-        account_select = Select(account_element)
-        selected_index = account_select.options.index(
-            account_select.first_selected_option
-        )
-        if selected_index != index:
-            account_select.select_by_index(index)
-            sleep(timeout)
+        self.select_item_index(account_element, index, timeout=timeout)
 
     def click_extract(self, row_index=0, wait_download: bool = True):
         open_extract = self.get_element(
@@ -306,6 +300,24 @@ class BpiDocument:
         if self.date is None:
             raise Exception("Date is not set")
         return self.date.year
+
+    @property
+    def month(self) -> int:
+        if self.date is None:
+            raise Exception("Date is not set")
+        return self.date.month
+
+    @property
+    def day(self) -> int:
+        if self.date is None:
+            raise Exception("Date is not set")
+        return self.date.day
+
+    @property
+    def month_filename(self) -> str:
+        if self.date is None:
+            raise Exception("Date is not set")
+        return f"{self.date.strftime('%m')}.{self.file_type.extension}"
 
     @property
     def month_filename(self) -> str:

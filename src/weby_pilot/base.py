@@ -89,9 +89,36 @@ class WebyAPI:
             expected_conditions.presence_of_all_elements_located((by, value))
         )
 
-    def select_item(self, element: WebElement, text: str) -> Select:
+    def select_item(
+        self,
+        element: WebElement,
+        text: str,
+        force: bool = False,
+        timeout: float | None = None,
+    ) -> Select:
         select = Select(element)
+        selected_text = select.first_selected_option.text
+        if not force and selected_text == text:
+            return select
         select.select_by_visible_text(text)
+        if timeout is not None:
+            sleep(timeout)
+        return select
+
+    def select_item_index(
+        self,
+        element: WebElement,
+        index: int,
+        force: bool = False,
+        timeout: float | None = None,
+    ) -> Select:
+        select = Select(element)
+        selected_index = select.options.index(select.first_selected_option)
+        if not force and selected_index == index:
+            return select
+        select.select_by_index(index)
+        if timeout is not None:
+            sleep(timeout)
         return select
 
     def wait_download(

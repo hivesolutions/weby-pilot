@@ -13,11 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-*
+* Simplified code in the select elements
 
 ### Fixed
 
 * Issue with investment extracts
+* Problem with the download and parsing of invoice date
 
 ## [0.1.4] - 2024-10-01
 
