@@ -2,14 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from enum import Enum
-from time import sleep
 from os import environ
 from os.path import basename
 from datetime import datetime
 from typing import IO, Literal, Sequence, cast
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import Select
 
 from .base import WebyAPI
 from .common import FileType

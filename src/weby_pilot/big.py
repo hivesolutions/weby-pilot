@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from os import environ
-from typing import Tuple
 
 from .base import WebyAPI
 
