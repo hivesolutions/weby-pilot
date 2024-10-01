@@ -318,9 +318,3 @@ class BpiDocument:
         if self.date is None:
             raise Exception("Date is not set")
         return f"{self.date.strftime('%m')}.{self.file_type.extension}"
-
-    @property
-    def month_filename(self) -> str:
-        if self.date is None:
-            raise Exception("Date is not set")
-        return f"{self.date.strftime('%m')}.{self.file_type.extension}"
