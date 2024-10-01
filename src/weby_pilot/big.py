@@ -4,6 +4,7 @@
 from os import environ
 
 from .base import WebyAPI
+from .errors import WebyError
 
 
 class BigAPI(WebyAPI):
@@ -20,8 +21,8 @@ class BigAPI(WebyAPI):
             self.nif = environ.get("BIG_NIF", None)
 
         if self.username is None:
-            raise Exception("BIG_USERNAME must be set")
+            raise WebyError("BIG_USERNAME must be set")
         if self.password is None:
-            raise Exception("BIG_PASSWORD must be set")
+            raise WebyError("BIG_PASSWORD must be set")
         if self.nif is None:
-            raise Exception("BIG_NIF must be set")
+            raise WebyError("BIG_NIF must be set")

@@ -11,6 +11,7 @@ from selenium.webdriver.common.keys import Keys
 
 from .base import WebyAPI
 from .common import FileType
+from .errors import WebyError
 
 BpiSections = Literal[
     "Consultas",
@@ -76,9 +77,9 @@ class BpiAPI(WebyAPI):
             self.password = environ.get("BPI_PASSWORD", None)
 
         if self.username is None:
-            raise Exception("BPI_USERNAME must be set")
+            raise WebyError("BPI_USERNAME must be set")
         if self.password is None:
-            raise Exception("BPI_PASSWORD must be set")
+            raise WebyError("BPI_PASSWORD must be set")
 
     def get_balance(self) -> str:
         with self.driver_ctx():
@@ -217,8 +218,8 @@ class BpiAPI(WebyAPI):
         self.select_item(self.get_elements(By.XPATH, "//select")[2], date_range)
         self.select_item(self.get_elements(By.XPATH, "//select")[3], document_type)
 
-        filter = self.get_element(By.XPATH, "//*[@value='Filtrar']")
-        filter.click()
+        _filter = self.get_element(By.XPATH, "//*[@value='Filtrar']")
+        _filter.click()
 
     def select_account(self, index: int = 0, timeout=5.0):
         account_element = self.get_element(
@@ -267,7 +268,7 @@ class BpiDocumentType(Enum):
 
 
 class BpiDocument:
-    type: BpiDocumentType
+    doc_type: BpiDocumentType
     name: str
     buffer: IO[bytes]
     file_type: FileType
@@ -276,14 +277,14 @@ class BpiDocument:
 
     def __init__(
         self,
-        type: BpiDocumentType,
+        doc_type: BpiDocumentType,
         name: str,
         buffer: IO[bytes],
         file_type: FileType,
         account: str | None = None,
         date: datetime | None = None,
     ):
-        self.type = type
+        self.doc_type = doc_type
         self.name = name
         self.buffer = buffer
         self.file_type = file_type
@@ -291,28 +292,28 @@ class BpiDocument:
         self.date = date
 
     def __repr__(self):
-        return f"BpiDocument(type={self.type}, name={self.name}, account={self.account} date={self.date})"
+        return f"BpiDocument(doc_type={self.doc_type}, name={self.name}, account={self.account} date={self.date})"
 
     @property
     def year(self) -> int:
         if self.date is None:
-            raise Exception("Date is not set")
+            raise WebyError("Date is not set")
         return self.date.year
 
     @property
     def month(self) -> int:
         if self.date is None:
-            raise Exception("Date is not set")
+            raise WebyError("Date is not set")
         return self.date.month
 
     @property
     def day(self) -> int:
         if self.date is None:
-            raise Exception("Date is not set")
+            raise WebyError("Date is not set")
         return self.date.day
 
     @property
     def month_filename(self) -> str:
         if self.date is None:
-            raise Exception("Date is not set")
+            raise WebyError("Date is not set")
         return f"{self.date.strftime('%m')}.{self.file_type.extension}"

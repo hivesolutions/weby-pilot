@@ -14,6 +14,8 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait, Select
 
+from .errors import WebyError
+
 MAX_WAIT_TIME = 30.0
 
 ImageFormat = Literal["png", "jpeg", "gif", "bmp", "tiff", "svg"]
@@ -156,7 +158,7 @@ class WebyAPI:
                     if overwrite:
                         remove(f"{self._downloads_dir}/{filename}")
                     else:
-                        raise Exception(
+                        raise WebyError(
                             f"File {filename} already exists in downloads folder"
                         )
 
@@ -181,7 +183,7 @@ class WebyAPI:
             # we can return the destination file path
             return dst
 
-        raise Exception(f"Download not completed after {timeout} seconds")
+        raise WebyError(f"Download not completed after {timeout} seconds")
 
     def screenshot(self) -> bytes:
         return self.driver.get_screenshot_as_png()
@@ -195,7 +197,7 @@ class WebyAPI:
         filename = f"{name}.{image_format}"
 
         if not self.driver.get_screenshot_as_file(filename):
-            raise Exception(f"Failed to save screenshot to {filename}")
+            raise WebyError(f"Failed to save screenshot to {filename}")
 
         return filename
 
@@ -226,13 +228,13 @@ class WebyAPI:
     @property
     def driver(self) -> Chrome:
         if self._driver is None:
-            raise Exception("Driver is not started")
+            raise WebyError("Driver is not started")
         return self._driver
 
     @property
     def wait(self) -> WebDriverWait[Chrome]:
         if self._wait is None:
-            raise Exception("Wait is not started")
+            raise WebyError("Wait is not started")
         return self._wait
 
     def _cleanup_temp(self):
@@ -256,7 +258,7 @@ class WebyAPI:
     @property
     def _last_download_path(self) -> str:
         if self._last_path is None:
-            raise Exception("No file downloaded")
+            raise WebyError("No file downloaded")
         if not exists(self._last_path):
-            raise Exception(f"File {self._last_download} does not exist")
+            raise WebyError(f"File {self._last_download} does not exist")
         return self._last_path
