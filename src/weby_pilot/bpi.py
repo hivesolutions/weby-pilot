@@ -270,7 +270,7 @@ class BpiDocument:
         return f"BpiDocument(type={self.type}, name={self.name}, account={self.account} date={self.date})"
 
     @property
-    def year(self) -> Tuple[int, int]:
+    def year(self) -> int:
         if self.date is None:
             raise Exception("Date is not set")
         return self.date.year
