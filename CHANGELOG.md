@@ -13,11 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-* Increased stability of the API
+*
 
 ### Fixed
 
 *
+
+## [0.1.1] - 2024-10-01
+
+### Changed
+
+* Increased stability of the API
 
 ## [0.1.0] - 2024-09-30
 
