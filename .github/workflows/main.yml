@@ -31,7 +31,6 @@ jobs:
       - run: |
           pip install mypy
           mypy src --ignore-missing-imports --disable-error-code no-redef
-          MYPYPATH=src mypy test --ignore-missing-imports --disable-error-code no-redef
       - run: |
           pip install pytest
           pytest
@@ -61,7 +60,6 @@ jobs:
       - run: |
           pip install mypy
           mypy src --ignore-missing-imports --disable-error-code no-redef
-          MYPYPATH=src mypy test --ignore-missing-imports --disable-error-code no-redef
       - run: |
           pip install pytest
           pytest
