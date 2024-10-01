@@ -20,9 +20,11 @@ ImageFormat = Literal["png", "jpeg", "gif", "bmp", "tiff", "svg"]
 
 class WebyOptions:
     headless: bool = False
+    stable: bool = True
 
-    def __init__(self, headless: bool = False):
+    def __init__(self, headless: bool = False, stable: bool = True):
         self.headless = headless
+        self.stable = stable
 
 
 class WebyAPI:
@@ -46,6 +48,12 @@ class WebyAPI:
         chrome_options = ChromeOptions()
         if options.headless:
             chrome_options.arguments.append("--headless=new")
+        if options.stable:
+            chrome_options.arguments.append("--no-sandbox")
+            chrome_options.arguments.append("--disable-dev-shm-usage")
+            chrome_options.arguments.append("--disable-gpu")
+            chrome_options.arguments.append("--disable-setuid-sandbox")
+            chrome_options.arguments.append("--remote-debugging-port=9222")
         chrome_options.add_experimental_option(
             "prefs",
             {
