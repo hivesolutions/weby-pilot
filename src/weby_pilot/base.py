@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from io import BytesIO
+from shutil import rmtree
 from typing import IO, Any, Generator, List, Literal
 from uuid import uuid4
 from time import sleep
@@ -30,6 +31,7 @@ class WebyOptions:
 class WebyAPI:
     _driver: Chrome | None = None
     _wait: WebDriverWait[Chrome] | None = None
+    _remove_downloads: bool = False
     _downloads_dir: str = abspath("downloads")
     _temp_dir: str = abspath("temp")
     _last_path: str | None = None
@@ -64,13 +66,18 @@ class WebyAPI:
                 "safebrowsing.disable_download_protection": True,
             },
         )
+
         self._driver = Chrome(options=chrome_options)
+        if options.stable:
+            self._driver.delete_all_cookies()
 
         self._wait = WebDriverWait(self._driver, MAX_WAIT_TIME)
 
     def stop(self):
         if self.driver is not None:
             self.driver.quit()
+        if self._remove_downloads and exists(self._downloads_dir):
+            rmtree(self._downloads_dir)
 
     def get_element(self, by: str, value: str) -> WebElement:
         return self.wait.until(

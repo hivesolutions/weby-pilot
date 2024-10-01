@@ -121,14 +121,15 @@ class BpiAPI(WebyAPI):
         self,
         section: ReportSections = "Extrato Conta",
         report_indexes: Sequence[int] = (0,),
-        account_index: int = 0,
+        account_index: int | None = None,
     ) -> Sequence["BpiDocument"]:
         docs: list[BpiDocument] = []
         with self.driver_ctx():
             self.login()
             self.select_section("Consultas")
             self.select_side_menu(cast(BpiSideSections, section))
-            self.select_account(account_index)
+            if account_index is not None:
+                self.select_account(account_index)
             for report_index in report_indexes:
                 self.click_extract(row_index=report_index)
                 docs.append(
@@ -155,12 +156,10 @@ class BpiAPI(WebyAPI):
         )
 
     def download_investing_report(
-        self, report_indexes: Sequence[int] = (0,), account_index: int = 0
+        self, report_indexes: Sequence[int] = (0,)
     ) -> Sequence["BpiDocument"]:
         return self.download_report(
-            section="Extrato Investimento",
-            report_indexes=report_indexes,
-            account_index=account_index,
+            section="Extrato Investimento", report_indexes=report_indexes
         )
 
     def download_card_report(
