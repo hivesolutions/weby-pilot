@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from enum import Enum
+from time import sleep
 from os import environ
 from os.path import basename
 from datetime import datetime
-from typing import IO, Literal, Sequence, Tuple, cast
+from typing import IO, Literal, Sequence, cast
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import Select
 
 from .base import WebyAPI
 from .common import FileType
@@ -119,12 +121,14 @@ class BpiAPI(WebyAPI):
         self,
         section: ReportSections = "Extrato Conta",
         report_indexes: Sequence[int] = (0,),
+        account_index: int = 0,
     ) -> Sequence["BpiDocument"]:
         docs: list[BpiDocument] = []
         with self.driver_ctx():
             self.login()
             self.select_section("Consultas")
             self.select_side_menu(cast(BpiSideSections, section))
+            self.select_account(account_index)
             for report_index in report_indexes:
                 self.click_extract(row_index=report_index)
                 docs.append(
@@ -142,17 +146,21 @@ class BpiAPI(WebyAPI):
         return docs
 
     def download_account_report(
-        self, report_indexes: Sequence[int] = (0,)
+        self, report_indexes: Sequence[int] = (0,), account_index: int = 0
     ) -> Sequence["BpiDocument"]:
         return self.download_report(
-            section="Extrato Conta", report_indexes=report_indexes
+            section="Extrato Conta",
+            report_indexes=report_indexes,
+            account_index=account_index,
         )
 
     def download_investing_report(
-        self, report_indexes: Sequence[int] = (0,)
+        self, report_indexes: Sequence[int] = (0,), account_index: int = 0
     ) -> Sequence["BpiDocument"]:
         return self.download_report(
-            section="Extrato Investimento", report_indexes=report_indexes
+            section="Extrato Investimento",
+            report_indexes=report_indexes,
+            account_index=account_index,
         )
 
     def download_card_report(self, card_index=0, report_indexes: Sequence[int] = (0,)):
@@ -198,6 +206,18 @@ class BpiAPI(WebyAPI):
 
         filter = self.get_element(By.XPATH, "//*[@value='Filtrar']")
         filter.click()
+
+    def select_account(self, index: int = 0, timeout=5.0):
+        account_element = self.get_element(
+            By.XPATH, "//div[text()='Conta']/following-sibling::div/*/select"
+        )
+        account_select = Select(account_element)
+        selected_index = account_select.options.index(
+            account_select.first_selected_option
+        )
+        if selected_index != index:
+            account_select.select_by_index(index)
+            sleep(timeout)
 
     def click_extract(self, row_index=0, wait_download: bool = True):
         open_extract = self.get_element(
