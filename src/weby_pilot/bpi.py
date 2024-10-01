@@ -10,6 +10,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from .base import WebyAPI
+from .common import FileType
 
 BpiSections = Literal[
     "Consultas",
@@ -107,6 +108,7 @@ class BpiAPI(WebyAPI):
                         BpiDocumentType.from_section(document_type),
                         basename(self._last_download_path),
                         self._last_download_buffer(),
+                        file_type=FileType.PDF,
                         account=self.username,
                         date=datetime.strptime(
                             self._last_download_path[-14:-4], "%Y-%m-%d"
@@ -132,6 +134,7 @@ class BpiAPI(WebyAPI):
                         BpiDocumentType.from_section(section),
                         basename(self._last_download_path),
                         self._last_download_buffer(),
+                        file_type=FileType.PDF,
                         account=self.username,
                         date=datetime.strptime(
                             self._last_download_path[-14:-4], "%Y-%m-%d"
@@ -242,7 +245,8 @@ class BpiDocument:
 
     type: BpiDocumentType
     name: str
-    buffer: IO
+    buffer: IO[bytes]
+    file_type: FileType
     account: str | None
     date: datetime | None
 
@@ -250,15 +254,29 @@ class BpiDocument:
         self,
         type: BpiDocumentType,
         name: str,
-        buffer: IO,
+        buffer: IO[bytes],
+        file_type: FileType,
         account: str | None = None,
         date: datetime | None = None,
     ):
         self.type = type
         self.name = name
         self.buffer = buffer
+        self.file_type = file_type
         self.account = account
         self.date = date
 
     def __repr__(self):
         return f"BpiDocument(type={self.type}, name={self.name}, account={self.account} date={self.date})"
+
+    @property
+    def year(self) -> Tuple[int, int]:
+        if self.date is None:
+            raise Exception("Date is not set")
+        return self.date.year
+
+    @property
+    def month_filename(self) -> str:
+        if self.date is None:
+            raise Exception("Date is not set")
+        return f"{self.date.strftime('%m')}.{self.file_type.extension}"
