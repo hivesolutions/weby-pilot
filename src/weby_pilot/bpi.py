@@ -66,22 +66,20 @@ class BpiAPI(WebyAPI):
     def __init__(self, username: str | None = None, password: str | None = None):
         super().__init__()
 
-        cls = self.__class__
+        self.username = username
+        self.password = password
+        self.build_login()
 
-        _username, _password = cls.build_login()
-        self.username = username or _username
-        self.password = password or _password
+    def build_login(self):
+        if self.username is None:
+            self.username = environ.get("BPI_USERNAME", None)
+        if self.password is None:
+            self.password = environ.get("BPI_PASSWORD", None)
 
-    @classmethod
-    def build_login(cls) -> Tuple[str, str]:
-        username = environ.get("BPI_USERNAME", None)
-        password = environ.get("BPI_PASSWORD", None)
-        if username is None:
+        if self.username is None:
             raise Exception("BPI_USERNAME must be set")
-        if password is None:
+        if self.password is None:
             raise Exception("BPI_PASSWORD must be set")
-
-        return username, password
 
     def get_balance(self) -> str:
         with self.driver_ctx():
