@@ -163,7 +163,10 @@ class BpiAPI(WebyAPI):
             account_index=account_index,
         )
 
-    def download_card_report(self, card_index=0, report_indexes: Sequence[int] = (0,)):
+    def download_card_report(
+        self, card_index=0, report_indexes: Sequence[int] = (0,)
+    ) -> Sequence["BpiDocument"]:
+        docs: list[BpiDocument] = []
         with self.driver_ctx():
             self.login()
             self.select_section("Consultas")
@@ -171,6 +174,19 @@ class BpiAPI(WebyAPI):
             for report_index in report_indexes:
                 self.click_card_account(row_index=card_index)
                 self.click_extract(row_index=report_index)
+                docs.append(
+                    BpiDocument(
+                        BpiDocumentType.CARD_EXTRACT,
+                        basename(self._last_download_path),
+                        self._last_download_buffer(),
+                        file_type=FileType.PDF,
+                        account=self.username,
+                        date=datetime.strptime(
+                            self._last_download_path[-14:-4], "%Y-%m-%d"
+                        ),
+                    )
+                )
+        return docs
 
     def login(self, username: str | None = None, password: str | None = None):
         self.driver.get("https://bpinetempresas.bancobpi.pt/SIGNON/signon.asp")
