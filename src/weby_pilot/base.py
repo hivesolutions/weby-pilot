@@ -149,11 +149,23 @@ class WebyAPI:
             if any([filename.endswith(suffix) for filename in listdir(self._temp_dir)]):
                 continue
 
+            # get the valid names of the files in the temp download folder
+            # in case there's none continues the loop (note that hidden files
+            # are not considered as valid files)
+            valid_names = [
+                name for name in listdir(self._temp_dir) if not name.startswith(".")
+            ]
+            if not valid_names:
+                continue
+
+            # obtains the first name as the file name for the source path
+            # of the file to be (eventually) "moved"
+            filename = valid_names[0]
+            src = f"{self._temp_dir}/{filename}"
+
             # if the file should be moved, then move it from
             # the temp download folder to the downloads folder
             if move_file:
-                filename = listdir(self._temp_dir)[0]
-
                 if filename in listdir(self._downloads_dir):
                     if overwrite:
                         remove(f"{self._downloads_dir}/{filename}")
@@ -162,7 +174,6 @@ class WebyAPI:
                             f"File {filename} already exists in downloads folder"
                         )
 
-                src = f"{self._temp_dir}/{filename}"
                 dst = f"{self._downloads_dir}/{filename}"
 
                 if file_path is not None:
@@ -176,7 +187,11 @@ class WebyAPI:
                 dst = abspath(dst)
 
                 rename(src, dst)
+            else:
+                dst = src
 
+            # "saves" the destination file path as the path to the
+            # last downloaded file, required for later use
             self._last_path = dst
 
             # if we reach this point, then the download is completed
