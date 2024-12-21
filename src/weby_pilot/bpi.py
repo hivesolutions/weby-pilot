@@ -223,7 +223,7 @@ class BpiAPI(WebyAPI):
 
     def select_account(self, index: int = 0, timeout=5.0):
         account_element = self.get_element(
-            By.XPATH, "//div[text()='Conta']/following-sibling::div/*/select"
+            By.XPATH, "//div[text()='Conta']/following-sibling::div/select"
         )
         self.select_item_index(account_element, index, timeout=timeout)
 
