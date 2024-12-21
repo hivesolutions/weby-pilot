@@ -17,7 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-* Issue related to account selection in BPI
+*
+
+## [0.1.7] - 2024-12-21
+
+### Fixed
+
+* Issue related to hidden files considered in downloads folder
 
 ## [0.1.6] - 2024-10-01
 
