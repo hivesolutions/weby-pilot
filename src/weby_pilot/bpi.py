@@ -213,7 +213,7 @@ class BpiAPI(WebyAPI):
     def login_legacy(self, username: str | None = None, password: str | None = None):
         self.driver.get("https://bpinetempresas.bancobpi.pt/SIGNON/signon.asp")
 
-        close = self.driver.find_element(By.ID, "fechar")
+        close = self.get_element(By.ID, "fechar")
         close.click()
 
         username_e = self.get_element(By.XPATH, "//*[@label='Nome Acesso']")
