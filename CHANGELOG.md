@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+*
+
+## [0.1.8] - 2025-03-09
+
+### Fixed
+
 * BPI driver to use new login page with iFrame structure
 
 ## [0.1.7] - 2024-12-21
