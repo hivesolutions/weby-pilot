@@ -98,6 +98,9 @@ class WebyAPI:
         if self._remove_downloads and exists(self._downloads_dir):
             rmtree(self._downloads_dir)
 
+    def redirect(self, url: str):
+        self.driver.get(url)
+
     def switch_to_iframe(self, by: str, value: str):
         element = self.get_element(by, value)
         self.driver.switch_to.frame(element)

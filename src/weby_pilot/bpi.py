@@ -187,7 +187,7 @@ class BpiAPI(WebyAPI):
         return docs
 
     def login(self, username: str | None = None, password: str | None = None):
-        self.driver.get("https://bpinetempresas.bancobpi.pt/SIGNON/signon.asp")
+        self.redirect("https://bpinetempresas.bancobpi.pt/SIGNON/signon.asp")
 
         close = self.get_element(By.ID, "consent_prompt_submit")
         close.click()
@@ -211,7 +211,7 @@ class BpiAPI(WebyAPI):
             self.switch_to_default()
 
     def login_legacy(self, username: str | None = None, password: str | None = None):
-        self.driver.get("https://bpinetempresas.bancobpi.pt/SIGNON/signon.asp")
+        self.redirect("https://bpinetempresas.bancobpi.pt/SIGNON/signon.asp")
 
         close = self.get_element(By.ID, "fechar")
         close.click()
