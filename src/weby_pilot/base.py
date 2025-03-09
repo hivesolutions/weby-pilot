@@ -24,10 +24,20 @@ ImageFormat = Literal["png", "jpeg", "gif", "bmp", "tiff", "svg"]
 class WebyOptions:
     headless: bool = False
     stable: bool = True
+    window_width: int | None = 1920
+    window_height: int | None = 1080
 
-    def __init__(self, headless: bool = False, stable: bool = True):
+    def __init__(
+        self,
+        headless: bool = False,
+        stable: bool = True,
+        window_width: int | None = 1920,
+        window_height: int | None = 1080,
+    ):
         self.headless = headless
         self.stable = stable
+        self.window_width = window_width
+        self.window_height = window_height
 
 
 class WebyAPI:
@@ -50,8 +60,15 @@ class WebyAPI:
             makedirs(self._temp_dir)
 
         chrome_options = ChromeOptions()
+        chrome_options.arguments.append("--enable-unsafe-swiftshader")
         if options.headless:
             chrome_options.arguments.append("--headless=new")
+            if options.window_width is not None and options.window_height is not None:
+                chrome_options.arguments.append(
+                    f"--window-size={options.window_width},{options.window_height}"
+                )
+        else:
+            chrome_options.arguments.append("--start-maximized")
         if options.stable:
             chrome_options.arguments.append("--no-sandbox")
             chrome_options.arguments.append("--disable-dev-shm-usage")
@@ -80,6 +97,13 @@ class WebyAPI:
             self.driver.quit()
         if self._remove_downloads and exists(self._downloads_dir):
             rmtree(self._downloads_dir)
+
+    def switch_to_iframe(self, by: str, value: str):
+        element = self.get_element(by, value)
+        self.driver.switch_to.frame(element)
+
+    def switch_to_default(self):
+        self.driver.switch_to.default_content()
 
     def get_element(self, by: str, value: str) -> WebElement:
         return self.wait.until(

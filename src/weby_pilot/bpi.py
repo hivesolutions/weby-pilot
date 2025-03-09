@@ -189,6 +189,30 @@ class BpiAPI(WebyAPI):
     def login(self, username: str | None = None, password: str | None = None):
         self.driver.get("https://bpinetempresas.bancobpi.pt/SIGNON/signon.asp")
 
+        close = self.get_element(By.ID, "consent_prompt_submit")
+        close.click()
+        login_button = self.get_element(
+            By.ID, "wt2_LT_SitePublico_wt151_block_wtButtonEntrar"
+        )
+        login_button.click()
+
+        self.switch_login_iframe()
+        try:
+            username_e = self.get_element(
+                By.XPATH, "//*[@placeholder='Nome / Nº Adesão']"
+            )
+            password_e = self.get_element(
+                By.XPATH, "//*[@placeholder='Código Secreto']"
+            )
+            username_e.send_keys(username or self.username or "")
+            password_e.send_keys(password or self.password or "")
+            password_e.send_keys(Keys.RETURN)
+        finally:
+            self.switch_to_default()
+
+    def login_legacy(self, username: str | None = None, password: str | None = None):
+        self.driver.get("https://bpinetempresas.bancobpi.pt/SIGNON/signon.asp")
+
         close = self.driver.find_element(By.ID, "fechar")
         close.click()
 
@@ -197,6 +221,12 @@ class BpiAPI(WebyAPI):
         username_e.send_keys(username or self.username or "")
         password_e.send_keys(password or self.password or "")
         password_e.send_keys(Keys.RETURN)
+
+    def switch_login_iframe(self):
+        self.switch_to_iframe(
+            By.XPATH, "//*[@class='login__footer']//iframe[@class='OSInline']"
+        )
+        self.switch_to_iframe(By.XPATH, "//iframe")
 
     def text_balance(self) -> str:
         balance = self.get_element(
