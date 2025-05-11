@@ -191,9 +191,7 @@ class BpiAPI(WebyAPI):
 
         close = self.get_element(By.ID, "consent_prompt_submit")
         close.click()
-        login_button = self.get_element(
-            By.ID, "wt2_LT_SitePublico_wt151_block_wtButtonEntrar"
-        )
+        login_button = self.get_element(By.XPATH, "//div[text()='Entrar']")
         login_button.click()
 
         self.switch_login_iframe()
