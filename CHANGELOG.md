@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+*
+
+## [0.1.9] - 2025-05-11
+
+### Fixed
+
 * Made BPI login button a lot more generic
 
 ## [0.1.8] - 2025-03-09
