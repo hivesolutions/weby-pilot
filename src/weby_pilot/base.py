@@ -50,7 +50,9 @@ class WebyAPI:
 
     @classmethod
     def build_options(cls):
-        return WebyOptions(headless=bool(environ.get("HEADLESS", False)))
+        return WebyOptions(
+            headless=bool(environ.get("HEADLESS", False) in ("1", "true", "True"))
+        )
 
     def start(self, options: WebyOptions = WebyOptions()):
         if not exists(self._downloads_dir):
@@ -258,14 +260,17 @@ class WebyAPI:
 
     @contextmanager
     def download_ctx(
-        self, wait_download=True, file_path: str | None = None
+        self,
+        wait_download=True,
+        file_path: str | None = None,
+        timeout: float = MAX_WAIT_TIME,
     ) -> Generator[str, Any, Any]:
         self._cleanup_temp()
         try:
             yield self._downloads_dir
         finally:
             if wait_download:
-                self.wait_download(file_path=file_path)
+                self.wait_download(file_path=file_path, timeout=timeout)
 
     @property
     def driver(self) -> Chrome:

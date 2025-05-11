@@ -243,8 +243,8 @@ class BpiAPI(WebyAPI):
         side_section_e.click()
 
     def select_filters(self, date_range: SelectDateRange, document_type: DocumentType):
-        self.select_item(self.get_elements(By.XPATH, "//select")[2], date_range)
-        self.select_item(self.get_elements(By.XPATH, "//select")[3], document_type)
+        self.select_item(self.get_element(By.XPATH, "(//select)[3]"), date_range)
+        self.select_item(self.get_element(By.XPATH, "(//select)[4]"), document_type)
 
         _filter = self.get_element(By.XPATH, "//*[@value='Filtrar']")
         _filter.click()
